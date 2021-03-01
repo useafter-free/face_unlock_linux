@@ -18,7 +18,7 @@ const std::string model_dir_path = "./data/";
 CascadeClassifier cascade;
 dnn::Net net;
 Ptr<face::FaceRecognizer> faceRec;
-double lthreshold = 110;
+double lthreshold = 100;
 double maxConf = 0.0;
 Mat maxFrame;
 Rect maxFace;
@@ -157,12 +157,12 @@ int main(int argc, char** argv) {
         // Capture frames from video and detect faces 
         std::cout << "Trying to Authenticate....\n"; 
         std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
-        while (!face_found)
+        while (1)
         { 
-            if(std::chrono::steady_clock::now() - start > std::chrono::seconds(10)) {
-                std::cout << "Timeout reached\n";
-                break;   
-            } 
+            // if(std::chrono::steady_clock::now() - start > std::chrono::seconds(10)) {
+            //     std::cout << "Timeout reached\n";
+            //     break;   
+            // } 
             capture >> frame; 
             if( frame.empty() ) 
                 break;
@@ -175,9 +175,11 @@ int main(int argc, char** argv) {
             if (model_choice == 1) {
                 cvtColor(frame1, grayImage, COLOR_BGR2GRAY);     
                 flip(grayImage, grayImage,1);
-                face_found = containsFaceAndCrop(grayImage);
-                if (face_found)
+                if (containsFaceAndCrop(grayImage)) {
                     maxFrame = grayImage.clone();
+                    //imwrite("face_tested.jpeg", maxFrame);
+                    face_found = Test(maxFrame);
+                    }
             }
 
             char c = (char)waitKey(10); 
@@ -197,10 +199,7 @@ int main(int argc, char** argv) {
                 std::cout << "No faces found...try again\n";
             }
         }
-        if (model_choice == 1) {
-            Test(maxFrame);
-        }
-         
+        
     }    
     return 0;
 }

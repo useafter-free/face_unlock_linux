@@ -106,7 +106,8 @@ bool dnnProcessing(Mat &frame) {
             // maxFace = max_frame_changed ? faces[0] : maxFace;
         }
     }// dnn for
-    cropFace(faces[0], frame);
+    if (faces.size() == 1)
+        cropFace(faces[0], frame);
       
      
     // if (max_frame_changed) {
