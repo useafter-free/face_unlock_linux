@@ -43,14 +43,19 @@ int isModelAvailable(std::string username) {
 bool containsFaceAndCrop(Mat &frame) {
     std::vector<Rect> faces; 
     
-    //cascade.detectMultiScale( frame, faces, 1.1, 2);
-   // cascade.detectMultiScale( frame, faces, 1.05, 8, 0 | cv::CASCADE_SCALE_IMAGE, cv::Size( 40, 40 ) );
+   //cascade.detectMultiScale( frame, faces, 1.1, 2);
+    cascade.detectMultiScale( frame, faces, 1.05, 8, 0 | cv::CASCADE_SCALE_IMAGE, cv::Size( 40, 40 ) );
+    int face_count = faces.size();
+    for (int i = 0; i < face_count; ++i) {
+        cv::rectangle(frame, faces[i], cv::Scalar(255, 0, 0), 1, 8, 0);
+        imshow("face detected", frame);
+    }
 
-    // if (faces.size() == 1) {
-    //     frame = frame(faces[0]);
-	//     cv::resize(frame, frame, cv::Size( 96, 96 ));
-    //     return true;
-    // }
+    if (faces.size() == 1) {
+        frame = frame(faces[0]);
+	    cv::resize(frame, frame, cv::Size( 96, 96 ));
+        return true;
+    }
     return false;
 }
 
@@ -136,13 +141,26 @@ int main(int argc, char** argv) {
     std::vector<Mat> frames_captured;
     std::cout << "Enter Username: ";
     std::cin >> username;
-
+     
+    int model_choice = 1;
+    std::cout << "Choose Classifier for face detection\n";
+    std::cout << "Enter 1 for Haar Cascade and 2 for DNN Classifier\n";
+    std::cin >> model_choice;
+    switch (model_choice) {
+        case 1:             // Haar
+        cascade.load(model_dir_path + "haarcascade_frontalface_alt.xml" );
+        break;
+        case 2:
+        net = cv::dnn::readNetFromCaffe(caffeConfigFile, caffeWeightFile);
+        break;
+        case 0: // default
+        std::cout << "Wrong choice of classfier\n";
+    };
     float scale = 1.0;
     VideoCapture capture;
     //cascade.load( model_dir_path + "haarcascade_frontalface_alt.xml");
     
-    net = cv::dnn::readNetFromCaffe(caffeConfigFile, caffeWeightFile);
-
+    
     if (isModelAvailable(username)){
         // exit, or improve the model?
         std::cout << "Model already trained for user = " << username << "\n";
@@ -170,7 +188,7 @@ int main(int argc, char** argv) {
                     
                 
                 Mat frame1 = frame.clone();
-                if (dnnProcessing(frame1)) {
+                if (model_choice == 2 && dnnProcessing(frame1)) {
                     cvtColor(frame1, grayImage, COLOR_BGR2GRAY);     
                     flip(grayImage, grayImage,1);
                     std::cout << "frame captured\n";
@@ -181,6 +199,14 @@ int main(int argc, char** argv) {
                     // ++i;
                     // imwrite(imgname.str(), grayImage);
                 
+                }
+                if (model_choice == 1) {
+                    cvtColor(frame1, grayImage, COLOR_BGR2GRAY);     
+                    flip(grayImage, grayImage,1);
+                    if (containsFaceAndCrop(frame1)) {
+                    std::cout << "frame captured\n";
+                    frames_captured.push_back(grayImage.clone());    
+                    }
                 }
                 //detectAndDraw( frame1, cascade, scale );  
                 //startWindowThread();                
