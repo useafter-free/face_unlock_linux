@@ -3,7 +3,7 @@ SRCDIR = src
 BINTRAIN = bin/train
 BINTEST = bin/test
 
-CFLAGS += `pkg-config --cflags --libs opencv4`
+CFLAGS += `pkg-config --cflags --libs opencv4` -std=c++17
 
 all:
 	$(CC) $(SRCDIR)/train.cpp $(CFLAGS) -o $(BINTRAIN)
