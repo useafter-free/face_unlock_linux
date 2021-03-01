@@ -26,6 +26,29 @@ Rect maxFace;
 const std::string caffeConfigFile = "./data/deploy.prototxt";
 const std::string caffeWeightFile = "./data/res10_300x300_ssd_iter_140000.caffemodel";
 
+
+bool containsFaceAndCrop(Mat &frame) {
+    std::vector<Rect> faces; 
+    
+   //cascade.detectMultiScale( frame, faces, 1.1, 2);
+    cascade.detectMultiScale( frame, faces, 1.05, 8, 0 | cv::CASCADE_SCALE_IMAGE, cv::Size( 40, 40 ) );
+    int face_count = faces.size();
+    for (int i = 0; i < face_count; ++i) {
+        cv::rectangle(frame, faces[i], cv::Scalar(255, 0, 0), 1, 8, 0);
+        imshow("face detected", frame);
+    }
+
+    if (faces.size() == 1) {
+        frame = frame(faces[0]);
+	    cv::resize(frame, frame, cv::Size( 96, 96 ));
+        return true;
+    }
+    return false;
+}
+
+
+
+
 int isModelAvailable(std::string username) {
     std::fstream modelStream;
     modelStream.open(model_dir_path + username + "-model.xml");
@@ -52,6 +75,7 @@ bool dnnProcessing(Mat &frame) {
             int y2 = static_cast<int>(detectionMat.at<float>(i, 6) * height);
             cv::rectangle(frame, cv::Point(x1, y1), cv::Point(x2, y2), cv::Scalar(255, 0, 0), 1, 8, 0);
             faces.push_back(cv::Rect(cv::Point(x1, y1), cv::Point(x2, y2)));
+            imshow("Minor Detection", frame);
             if (faces.size() > 1) {
                 return false;
             }        
@@ -105,12 +129,26 @@ int main(int argc, char** argv) {
     std::vector<Mat> frames_captured;
     std::cout << "Enter Username: ";
     std::cin >> username;
+     
+    int model_choice = 1;
+    std::cout << "Choose Classifier for face detection\n";
+    std::cout << "Enter 1 for Haar Cascade and 2 for DNN Classifier\n";
+    std::cin >> model_choice;
+    switch (model_choice) {
+        case 1:             // Haar
+        cascade.load(model_dir_path + "haarcascade_frontalface_alt.xml" );
+        break;
+        case 2:
+        net = cv::dnn::readNetFromCaffe(caffeConfigFile, caffeWeightFile);
+        break;
+        case 0: // default
+        std::cout << "Wrong choice of classfier\n";
+    };
+
 
     float scale = 1.0;
     VideoCapture capture;
-    //cascade.load( model_dir_path + "haarcascade_frontalface_alt.xml");
-    net = cv::dnn::readNetFromCaffe(caffeConfigFile, caffeWeightFile);
-    
+    bool face_found = false;
     
     
     capture.open(0);
@@ -119,7 +157,7 @@ int main(int argc, char** argv) {
         // Capture frames from video and detect faces 
         std::cout << "Trying to Authenticate....\n"; 
         std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
-        while (1)
+        while (!face_found)
         { 
             if(std::chrono::steady_clock::now() - start > std::chrono::seconds(10)) {
                 std::cout << "Timeout reached\n";
@@ -128,29 +166,41 @@ int main(int argc, char** argv) {
             capture >> frame; 
             if( frame.empty() ) 
                 break;
-            
-            if (dnnProcessing(frame)) {
-                flip(frame, frame,1);
+            Mat frame1 = frame.clone();
+            if (model_choice == 2 && dnnProcessing(frame1)) {
+                flip(frame1, frame1,1);
                 //frames_captured.push_back(frame.clone());
+            }
+
+            if (model_choice == 1) {
+                cvtColor(frame1, grayImage, COLOR_BGR2GRAY);     
+                flip(grayImage, grayImage,1);
+                face_found = containsFaceAndCrop(grayImage);
+                if (face_found)
+                    maxFrame = grayImage.clone();
             }
 
             char c = (char)waitKey(10); 
             // Press q to exit from window 
             if( c == 27 || c == 'q' || c == 'Q' )  
                 break; 
-            imshow("Minor Detection", frame);
             //imwrite("image.jpg", frames_captured[0]);
         }
         //
-        
-        if (maxConf != 0.0) {
-            cropFace(maxFace, maxFrame);
-            cvtColor(maxFrame, maxFrame, COLOR_BGR2GRAY);
+        if (model_choice == 2) {
+            if (maxConf != 0.0) {
+                cropFace(maxFace, maxFrame);
+                cvtColor(maxFrame, maxFrame, COLOR_BGR2GRAY);
+                Test(maxFrame);
+            }
+            else {
+                std::cout << "No faces found...try again\n";
+            }
+        }
+        if (model_choice == 1) {
             Test(maxFrame);
         }
-        else {
-            std::cout << "No faces found...try again\n";
-        } 
+         
     }    
     return 0;
 }
