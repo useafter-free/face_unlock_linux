@@ -65,7 +65,8 @@ bool dnnProcessing(Mat &frame) {
     bool max_frame_changed = false;
     int width = frame.size().width;
     int height = frame.size().height;
-    cv::Mat inputBlob = cv::dnn::blobFromImage(frame, 1.05, cv::Size(width, height), false, true);
+    std::cout << "DNN Processing...\n";
+    cv::Mat inputBlob = cv::dnn::blobFromImage(frame, 1.1, cv::Size(width, height), false, true);
     net.setInput(inputBlob, "data");
     cv::Mat detection = net.forward("detection_out");
     cv::Mat detectionMat(detection.size[2], detection.size[3], CV_32F, detection.ptr<float>());
@@ -80,6 +81,8 @@ bool dnnProcessing(Mat &frame) {
             int y2 = static_cast<int>(detectionMat.at<float>(i, 6) * height);
             cv::rectangle(frame, cv::Point(x1, y1), cv::Point(x2, y2), cv::Scalar(255, 0, 0), 1, 8, 0);
             faces.push_back(cv::Rect(cv::Point(x1, y1), cv::Point(x2, y2)));
+            std::cout << "faces detected possibly\n";
+            imshow("face detection", frame);
             if (faces.size() > 1) {
                 return false;
             }        
@@ -157,7 +160,7 @@ int main(int argc, char** argv) {
             std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
             while (1)
             { 
-                if(std::chrono::steady_clock::now() - start > std::chrono::seconds(40)) {
+                if(std::chrono::steady_clock::now() - start > std::chrono::seconds(10)) {
                     std::cout << "Timeout reached\n";
                     break;   
                 } 
@@ -170,7 +173,9 @@ int main(int argc, char** argv) {
                 if (dnnProcessing(frame1)) {
                     cvtColor(frame1, grayImage, COLOR_BGR2GRAY);     
                     flip(grayImage, grayImage,1);
+                    std::cout << "frame captured\n";
                     frames_captured.push_back(grayImage.clone());
+                    
                     // std::stringstream imgname;
                     // imgname << "train/" << username << "/image_" << i << ".jpg";  
                     // ++i;
@@ -178,9 +183,8 @@ int main(int argc, char** argv) {
                 
                 }
                 //detectAndDraw( frame1, cascade, scale );  
+                //startWindowThread();                
                 
-                startWindowThread();                
-                imshow("Minor Detection", grayImage);
 
                 char c = (char)waitKey(10); 
                 // Press q to exit from window 
