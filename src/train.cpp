@@ -6,11 +6,13 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <filesystem>
 #include <string>
 #include <chrono>
 
 #define MAX_FRAMES_FOR_TRAINING 10
 
+namespace fs = std::filesystem;
 using namespace cv;
 /*
 to do:
@@ -48,7 +50,7 @@ bool containsFaceAndCrop(Mat &frame) {
     int face_count = faces.size();
     for (int i = 0; i < face_count; ++i) {
         cv::rectangle(frame, faces[i], cv::Scalar(255, 0, 0), 1, 8, 0);
-        imshow("face detected", frame);
+        imwrite("face_detected.jpeg", frame);
     }
 
     if (faces.size() == 1) {
@@ -169,8 +171,31 @@ int main(int argc, char** argv) {
     else {
         std::cout << "model doesn't exists for " << username << "\n";
         std::cout << "Capturing facial data for " << username << ".....\n";
-
-        capture.open(0);
+        
+        bool read_from_file = true;
+        
+        if (read_from_file) {
+            std::string dataset_path = "./data/ayushd/";
+            for (const auto& file  : fs::directory_iterator(dataset_path)) {
+                Mat frame1 = imread(file.path(), IMREAD_COLOR);
+                if (model_choice == 2 && dnnProcessing(frame1)) {
+                    cvtColor(frame1, grayImage, COLOR_BGR2GRAY);     
+                    flip(grayImage, grayImage,1);
+                    std::cout << "frame captured\n";
+                    frames_captured.push_back(grayImage.clone());
+                }
+                if (model_choice == 1) {
+                    cvtColor(frame1, grayImage, COLOR_BGR2GRAY);     
+                    flip(grayImage, grayImage,1);
+                    if (containsFaceAndCrop(grayImage)) {
+                    std::cout << "frame captured\n";
+                    frames_captured.push_back(grayImage.clone());    
+                    }
+                }   
+            }
+        }
+        else {
+            capture.open(0);
         if (capture.isOpened()) 
         { 
             // Capture frames from video and detect faces 
@@ -203,7 +228,7 @@ int main(int argc, char** argv) {
                 if (model_choice == 1) {
                     cvtColor(frame1, grayImage, COLOR_BGR2GRAY);     
                     flip(grayImage, grayImage,1);
-                    if (containsFaceAndCrop(frame1)) {
+                    if (containsFaceAndCrop(grayImage)) {
                     std::cout << "frame captured\n";
                     frames_captured.push_back(grayImage.clone());    
                     }
@@ -218,6 +243,7 @@ int main(int argc, char** argv) {
                     break; 
 
             }
+        }
         }
         if (frames_captured.size()) {
             Train(frames_captured);
