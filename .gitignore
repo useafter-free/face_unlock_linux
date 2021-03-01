@@ -1,0 +1,4 @@
+data/*-model.xml
+bin/
+.vscode/
+*.png
