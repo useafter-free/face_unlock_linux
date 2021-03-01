@@ -24,7 +24,7 @@ Mat maxFrame;
 Rect maxFace;
 
 const std::string caffeConfigFile = "./data/deploy.prototxt";
-const std::string caffeWeightFile = "./data/res10_300x300_ssd_iter_140000.caffemodel";
+const std::string caffeWeightFile = "./data/res10_300x300_ssd_iter_140000_fp16.caffemodel";
 
 
 bool containsFaceAndCrop(Mat &frame) {
@@ -58,25 +58,25 @@ int isModelAvailable(std::string username) {
 bool dnnProcessing(Mat &frame) {
     std::vector<Rect> faces;
     bool max_frame_changed = false;
-    int width = frame.size().width;
-    int height = frame.size().height;
-    cv::Mat inputBlob = cv::dnn::blobFromImage(frame, 1.05, cv::Size(width, height), false, true);
+    int width = frame.cols;
+    int height = frame.rows;
+    cv::Mat inputBlob = cv::dnn::blobFromImage(frame, 1.0, cv::Size(300, 300), cv::Scalar(104.0, 177.0, 123.0), false, false);
     net.setInput(inputBlob, "data");
     cv::Mat detection = net.forward("detection_out");
     cv::Mat detectionMat(detection.size[2], detection.size[3], CV_32F, detection.ptr<float>());
     for(int i = 0; i < detectionMat.rows; i++)
     {
         float confidence = detectionMat.at<float>(i, 2);
-        if(confidence >= 0.5)
+        if(confidence >= 0.7)
         {
             int x1 = static_cast<int>(detectionMat.at<float>(i, 3) * width);
             int y1 = static_cast<int>(detectionMat.at<float>(i, 4) * height);
             int x2 = static_cast<int>(detectionMat.at<float>(i, 5) * width);
             int y2 = static_cast<int>(detectionMat.at<float>(i, 6) * height);
-            cv::rectangle(frame, cv::Point(x1, y1), cv::Point(x2, y2), cv::Scalar(255, 0, 0), 1, 8, 0);
+            cv::rectangle(frame, cv::Point(x1, y1), cv::Point(x2, y2), cv::Scalar(0, 255, 0), 2, 4);
             faces.push_back(cv::Rect(cv::Point(x1, y1), cv::Point(x2, y2)));
             imshow("Minor Detection", frame);
-            if (faces.size() > 1) {
+            if (faces.size() > 1 && faces.size() <= 0) {
                 return false;
             }        
             if (confidence > maxConf) {

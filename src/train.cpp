@@ -30,7 +30,7 @@ double maxConf = 0.0;
 Mat maxMat;
 //
 const std::string caffeConfigFile = "./data/deploy.prototxt";
-const std::string caffeWeightFile = "./data/res10_300x300_ssd_iter_140000.caffemodel";
+const std::string caffeWeightFile = "./data/res10_300x300_ssd_iter_140000_fp16.caffemodel";
 
 
 int isModelAvailable(std::string username) {
@@ -50,7 +50,7 @@ bool containsFaceAndCrop(Mat &frame) {
     int face_count = faces.size();
     for (int i = 0; i < face_count; ++i) {
         cv::rectangle(frame, faces[i], cv::Scalar(255, 0, 0), 1, 8, 0);
-        imwrite("face_detected.jpeg", frame);
+        imshow("haar face", frame);
     }
 
     if (faces.size() == 1) {
@@ -70,29 +70,26 @@ void cropFace(Rect& faces, Mat& frame) {
 bool dnnProcessing(Mat &frame) {
     std::vector<Rect> faces;
     bool max_frame_changed = false;
-    int width = frame.size().width;
-    int height = frame.size().height;
-    std::cout << "DNN Processing...\n";
-    cv::Mat inputBlob = cv::dnn::blobFromImage(frame, 1.1, cv::Size(width, height), false, true);
+    int width = frame.cols;
+    int height = frame.rows;
+    // std::cout << "DNN Processing...\n";
+    cv::Mat inputBlob = cv::dnn::blobFromImage(frame, 1.0, cv::Size(300, 300), cv::Scalar(104.0, 177.0, 123.0), false, false);
     net.setInput(inputBlob, "data");
     cv::Mat detection = net.forward("detection_out");
     cv::Mat detectionMat(detection.size[2], detection.size[3], CV_32F, detection.ptr<float>());
     for(int i = 0; i < detectionMat.rows; i++)
     {
         float confidence = detectionMat.at<float>(i, 2);
-        if(confidence >= 0.5)
+        if(confidence >= 0.7)
         {
             int x1 = static_cast<int>(detectionMat.at<float>(i, 3) * width);
             int y1 = static_cast<int>(detectionMat.at<float>(i, 4) * height);
             int x2 = static_cast<int>(detectionMat.at<float>(i, 5) * width);
             int y2 = static_cast<int>(detectionMat.at<float>(i, 6) * height);
-            cv::rectangle(frame, cv::Point(x1, y1), cv::Point(x2, y2), cv::Scalar(255, 0, 0), 1, 8, 0);
+            cv::rectangle(frame, cv::Point(x1, y1), cv::Point(x2, y2), cv::Scalar(0, 255, 0), 2, 4);
             faces.push_back(cv::Rect(cv::Point(x1, y1), cv::Point(x2, y2)));
-            std::cout << "faces detected possibly\n";
-            imshow("face detection", frame);
-            if (faces.size() > 1) {
-                return false;
-            }        
+            // std::cout << "faces detected possibly\n";
+            imshow("face detection", frame);      
             // if (confidence > maxConf) {
             //     maxConf = confidence;
             //     max_frame_changed = true;
@@ -106,7 +103,13 @@ bool dnnProcessing(Mat &frame) {
             // maxFace = max_frame_changed ? faces[0] : maxFace;
         }
     }// dnn for
-    if (faces.size() == 1)
+
+    std::cout << "no. ofq faces: "<< faces.size() << "\n";
+
+    if (faces.size() > 1 || faces.size() <= 0) {
+                return false;
+    }
+    else if (faces.size() == 1)
         cropFace(faces[0], frame);
       
      
@@ -173,7 +176,7 @@ int main(int argc, char** argv) {
         std::cout << "model doesn't exists for " << username << "\n";
         std::cout << "Capturing facial data for " << username << ".....\n";
         
-        bool read_from_file = true;
+        bool read_from_file = false;
         
         if (read_from_file) {
             std::string dataset_path = "./data/ayushd/";
@@ -247,6 +250,11 @@ int main(int argc, char** argv) {
         }
         }
         if (frames_captured.size()) {
+
+            // for debugging
+            // for (int i = 0; i< frames_captured.size(); i++){
+            //     imwrite(std::to_string(i) + ".jpg", frames_captured[i]);
+            // }
             Train(frames_captured);
             saveModel(model_dir_path);
         }
