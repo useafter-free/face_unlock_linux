@@ -1,19 +1,33 @@
-CC = g++
+CXX = g++
 SRCDIR = src
-BINTRAIN = bin/train
-BINTEST = bin/test
+BDIR=build/debug
 
-CFLAGS += `pkg-config --cflags --libs opencv4` -std=c++17
+CFLAGS += `pkg-config --cflags --libs opencv4` -std=c++17 -g
 
-all:
-	$(CC) $(SRCDIR)/train.cpp $(CFLAGS) -o $(BINTRAIN)
-	$(CC) $(SRCDIR)/test.cpp $(CFLAGS) -o $(BINTEST)
+#PREFIX is environment variable, but if it is not set, then set default value
+ifeq ($(PREFIX),)
+    PREFIX := /usr/local
+endif
 
-train:
-	$(CC) $(SRCDIR)/train.cpp $(CFLAGS) -o $(BINTRAIN)
+DEPS = $(wildcard $(SRCDIR)/*.hpp)
 
-test:
-	$(CC) $(SRCDIR)/test.cpp $(CFLAGS) -o $(BINTEST)
+SRC = $(wildcard $(SRCDIR)/*.cpp)
 
-clean:
-	rm $(BINTEST) $(BINTRAIN)
+faceauth: $(SRC)
+	mkdir -p $(BDIR)
+	$(CXX) -g -c $^ $(CFLAGS)
+	ar rcs $(BDIR)/libfaceauth.a *.o
+	ar -t $(BDIR)/libfaceauth.a
+	rm *.o
+	$(CXX) -g -fPIC -c $^ $(CFLAGS)
+	$(CXX) -shared -o $(BDIR)/libfaceauth.so *.o
+	rm *.o
+
+install: $(BDIR)/libfaceauth.a $(BDIR)/libfaceauth.so
+	install -d $(PREFIX)/lib/
+	install -m 644 $(BDIR)/libfaceauth.so $(PREFIX)/lib/
+	install -m 644 $(BDIR)/libfaceauth.a $(PREFIX)/lib/
+	install -d $(PREFIX)/include/faceauth
+	install -m 644 $(DEPS) $(PREFIX)/include/faceauth
+	echo "/usr/local/lib" > /etc/ld.so.conf.d/local.conf
+	ldconfig
