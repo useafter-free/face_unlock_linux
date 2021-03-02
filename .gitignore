@@ -2,3 +2,5 @@ data/*-model.xml
 bin/
 .vscode/
 *.png
+data/*/*.jpg
+data/*/*.png

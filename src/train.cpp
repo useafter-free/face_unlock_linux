@@ -104,7 +104,7 @@ bool dnnProcessing(Mat &frame) {
         }
     }// dnn for
 
-    std::cout << "no. ofq faces: "<< faces.size() << "\n";
+    std::cout << "no. of faces: "<< faces.size() << "\n";
 
     if (faces.size() > 1 || faces.size() <= 0) {
                 return false;
@@ -179,7 +179,9 @@ int main(int argc, char** argv) {
         bool read_from_file = false;
         
         if (read_from_file) {
-            std::string dataset_path = "./data/ayushd/";
+            // put images for 'username' in /data/'username'/ directory
+            std::string dataset_path = model_dir_path + username + "/";
+
             for (const auto& file  : fs::directory_iterator(dataset_path)) {
                 Mat frame1 = imread(file.path(), IMREAD_COLOR);
                 if (model_choice == 2 && dnnProcessing(frame1)) {
