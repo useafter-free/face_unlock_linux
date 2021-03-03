@@ -13,7 +13,11 @@ Train::~Train()
 
 
 void Train::trainModel()
-{   
+{
+    if(!isModelAvailable(username)){
+        std::cout << "Model already exists!\n";
+        return;
+    }
     std::vector<Mat> dataset_frames = getFramesFromFile();
     
     std::vector<Mat> frames_with_faces;
@@ -42,6 +46,7 @@ void Train::trainModel()
     // Train
     std::cout << "no. of images collected: " << n << "\n";
     faceRec->train(frames_with_faces,  labels);
+    saveModel(model_dir_path);
     std::cout << "Facial key saved.\n";
 }
 
