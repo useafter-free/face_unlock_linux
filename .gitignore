@@ -4,5 +4,6 @@ bin/
 *.png
 data/*/*.jpg
 data/*/*.png
-
+example/test
+example/train
 build/

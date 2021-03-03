@@ -1,10 +1,10 @@
 #include "train.hpp"
 
-Train::Train(std::string model_dir_path, int timeout, std::string username, const std::string caffeConfigFile, const std::string caffeWeightFile)
+Train::Train(std::string model_dir_path, std::string username, const std::string caffeConfigFile, const std::string caffeWeightFile)
 : Face(model_dir_path, username, caffeConfigFile, caffeWeightFile)
 {}
 
-Train::Train(std::string model_dir_path, int timeout, std::string username, const std::string cascadePath)
+Train::Train(std::string model_dir_path, std::string username, const std::string cascadePath)
 : Face(model_dir_path, username, cascadePath)
 {}
 
@@ -14,7 +14,7 @@ Train::~Train()
 
 void Train::trainModel()
 {
-    if(!isModelAvailable(username)){
+    if(isModelAvailable(username)){
         std::cout << "Model already exists!\n";
         return;
     }
