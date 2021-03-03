@@ -14,7 +14,7 @@ Face::Face(std::string model_dir_path, std::string username, std::string caffeCo
 
 Face::Face(std::string model_dir_path, std::string username, std::string cascadePath):model_dir_path(model_dir_path), username(username), cascadePath(cascadePath)
 {
-    cascade.load(cascadePath);
+    cascade.load(model_dir_path + cascadePath);
     faceRec = face::LBPHFaceRecognizer::create();
     model_choice = 1;
 }
@@ -43,7 +43,7 @@ bool Face::dnnProcessing(Mat &frame) {
     Mat inputBlob = dnn::blobFromImage(frame, 1.0, Size(300, 300), Scalar(104.0, 177.0, 123.0), false, false);
     net.setInput(inputBlob, "data");
     Mat detection = net.forward("detection_out");
-    Mat detectionMat(detection.size[2], detection.size[3], CV_8UC1, detection.ptr<float>());
+    Mat detectionMat(detection.size[2], detection.size[3], CV_32F, detection.ptr<float>());
     for(int i = 0; i < detectionMat.rows; i++)
     {
         float confidence = detectionMat.at<float>(i, 2);
@@ -59,7 +59,7 @@ bool Face::dnnProcessing(Mat &frame) {
         }
     }// dnn for
 
-    std::cout << "no. of faces: "<< faces.size() << "\n";
+    //std::cout << "no. of faces: "<< faces.size() << "\n";
 
     if (faces.size() > 1 || faces.size() <= 0) 
         return false;
@@ -67,15 +67,6 @@ bool Face::dnnProcessing(Mat &frame) {
         cropFace(faces[0], frame);
     return true;    
 }
-
-// nani nani nani == love
-// nani nani nani == love
-// nani nani nani == love
-// nani nani nani == love
-// nani nani nani == love
-// nani nani nani == love
-// nani nani nani == love
-// nani nani nani == love
 
 bool Face::haarProcessing(Mat &frame) {
     std::vector<Rect> faces; 
@@ -142,4 +133,10 @@ void Face::processFrames(std::vector<Mat>& frames)
         cvtColor(frame, frame, COLOR_BGR2GRAY);     
         flip(frame, frame, 1);
     }
+}
+
+void Face::processFrame(Mat& frame) 
+{
+    cvtColor(frame, frame, COLOR_BGR2GRAY);     
+    flip(frame, frame, 1);
 }

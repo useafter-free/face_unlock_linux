@@ -21,11 +21,11 @@ bool Test::testFaces()
     std::vector<Mat> camera_frames = getFramesFromCamera(timeout);
     std::chrono::steady_clock::time_point start_test = std::chrono::steady_clock::now();
     std::chrono::duration<double> time_haar;
-    processFrames(camera_frames);
     int num_faces = 0;
     int found_count = 0;
     switch(model_choice) {
     case HAARCASCADE:
+        processFrames(camera_frames);
         for (auto& frame : camera_frames) {
             if (haarProcessing(frame)) {
                 ++num_faces;
@@ -41,6 +41,7 @@ bool Test::testFaces()
         for (auto& frame : camera_frames) {
             if (dnnProcessing(frame)) {
                 ++num_faces;
+                processFrame(frame);
                 if (testFace(frame))
                     ++found_count;
             }

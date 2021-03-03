@@ -15,10 +15,11 @@ Train::~Train()
 void Train::trainModel()
 {   
     std::vector<Mat> dataset_frames = getFramesFromFile();
-    processFrames(dataset_frames);
+    
     std::vector<Mat> frames_with_faces;
     switch(model_choice) {
     case HAARCASCADE:
+        processFrames(dataset_frames);
         for (auto& frame : dataset_frames) {
             if (haarProcessing(frame)) {
                 frames_with_faces.push_back(frame.clone());
@@ -31,15 +32,16 @@ void Train::trainModel()
                 frames_with_faces.push_back(frame.clone());
             }
         }
+        processFrames(frames_with_faces);
         break;    
     };
-    int n = dataset_frames.size();
+    int n = frames_with_faces.size();
     std::vector<int> labels;
     for (int i = 0; i < n; ++i)
         labels.push_back(i);
     // Train
     std::cout << "no. of images collected: " << n << "\n";
-    faceRec->train(dataset_frames,  labels);
+    faceRec->train(frames_with_faces,  labels);
     std::cout << "Facial key saved.\n";
 }
 

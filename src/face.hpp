@@ -39,6 +39,7 @@ protected:
     int isModelAvailable(std::string username);
     void cropFace(Rect& faces, Mat& frame);    
     void processFrames(std::vector<Mat>& frames);
+    void processFrame(Mat& frame);
 };
 
 #endif
