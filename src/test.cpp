@@ -1,4 +1,7 @@
 #include "test.hpp"
+#include <chrono>
+#include <iomanip>
+#include <numeric>
 
 Test::Test(double lthreshold, int timeout, std::string model_dir_path, std::string username, std::string caffeConfigFile, std::string caffeWeightFile)
 : lthreshold(lthreshold), timeout(timeout), Face(model_dir_path, username, caffeConfigFile, caffeWeightFile)
@@ -14,10 +17,13 @@ Test::~Test()
 //PAM
 bool Test::testFaces() 
 {
+    faceRec->read(model_dir_path + username + "-model.xml");
     std::vector<Mat> camera_frames = getFramesFromCamera(timeout);
+    std::chrono::steady_clock::time_point start_test = std::chrono::steady_clock::now();
+    std::chrono::duration<double> time_haar;
     processFrames(camera_frames);
     int num_faces = 0;
-    int found_count = 0;        
+    int found_count = 0;
     switch(model_choice) {
     case HAARCASCADE:
         for (auto& frame : camera_frames) {
@@ -26,7 +32,10 @@ bool Test::testFaces()
                 if (testFace(frame))
                     ++found_count;
             }
-        } // nun roti khayenge, naali me nhi bahayenge, sperm daan kro, accha lagta hai!
+        }
+        time_haar = (std::chrono::steady_clock::now() - start_test);
+        //std::time_t ttp = std::chrono::system_clock::to_time_t(time_haar);
+        std::cout << "time for haar: " << time_haar.count() << "\n";
         break;
     case DNN:
         for (auto& frame : camera_frames) {
@@ -40,21 +49,23 @@ bool Test::testFaces()
     };
     if (num_faces == 0)
         return false;
-    return (static_cast<double>(found_count) / static_cast<double>(num_faces)) > 0.8 ; 
+
+    std::cout << found_count << "\n" << num_faces << "\n";
+    std::cout << "ratio of success: " << (static_cast<double>(found_count) / static_cast<double>(num_faces)) << "\n";
+    return (static_cast<double>(found_count) / static_cast<double>(num_faces)) > 0.65 ; 
 }
 
 bool Test::testFace(Mat& frame_captured) 
 {
     double confidence = 0.0;
     int label = -1;
-    faceRec->read(model_dir_path + username + "-model.xml");
     faceRec->predict(frame_captured , label, confidence);
-    std::cout << "confidence = " << confidence << " label: "<< label << "\n";
+    //std::cout << "confidence = " << confidence << " label: "<< label << "\n";
     if (confidence < lthreshold) {
-        std::cout << "face matches\n";
+        //std::cout << "face matches\n";
         return true;
     } else {
-        std::cout << "face doesn't matches\n";
+        //std::cout << "face doesn't matches\n";
         return false;
     }
 }

@@ -4,5 +4,5 @@ bin/
 *.png
 data/*/*.jpg
 data/*/*.png
-temp/
+
 build/

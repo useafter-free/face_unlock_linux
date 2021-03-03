@@ -7,7 +7,7 @@ namespace fs = std::filesystem;
 
 Face::Face(std::string model_dir_path, std::string username, std::string caffeConfigFile, std::string caffeWeightFile): model_dir_path(model_dir_path), username(username), caffeConfigFile(caffeConfigFile), caffeWeightFile(caffeWeightFile)
 {
-    net = cv::dnn::readNetFromCaffe(caffeConfigFile, caffeWeightFile);
+    net = cv::dnn::readNetFromCaffe(model_dir_path + caffeConfigFile, model_dir_path + caffeWeightFile);
     faceRec = face::LBPHFaceRecognizer::create();
     model_choice = 2;
 }
@@ -55,7 +55,7 @@ bool Face::dnnProcessing(Mat &frame) {
             int y2 = static_cast<int>(detectionMat.at<float>(i, 6) * height);
             rectangle(frame, Point(x1, y1), Point(x2, y2), Scalar(0, 255, 0), 2, 4);
             faces.push_back(Rect(Point(x1, y1), Point(x2, y2)));
-            imshow("face detection", frame);
+            //imshow("face detection", frame);
         }
     }// dnn for
 
@@ -85,7 +85,7 @@ bool Face::haarProcessing(Mat &frame) {
     int face_count = faces.size();
     for (int i = 0; i < face_count; ++i) {
         cv::rectangle(frame, faces[i], cv::Scalar(255, 0, 0), 1, 8, 0);
-        imshow("haar face", frame);
+        //imshow("haar face", frame);
     }
 
     if (faces.size() == 1) {
