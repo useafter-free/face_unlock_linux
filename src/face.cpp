@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <fstream>
 #include <chrono>
+#include <opencv2/core/utils/logger.hpp>
 
 namespace fs = std::filesystem;
 
@@ -105,7 +106,7 @@ std::vector<Mat> Face::getFramesFromCamera(int timeout)
     VideoCapture capture;
     bool face_found = false;
     
-    
+    utils::logging::setLogLevel(utils::logging::LogLevel::LOG_LEVEL_ERROR);
     capture.open(0);
     if (capture.isOpened()) 
     { 
