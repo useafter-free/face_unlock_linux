@@ -99,7 +99,7 @@ std::vector<Mat> Face::getFramesFromFile()
 
 std::vector<Mat> Face::getFramesFromCamera(int timeout)
 {
-    Mat frame;
+    Mat frame, temp;
     std::vector<Mat> camera_frames;
     float scale = 1.0;
     VideoCapture capture;
@@ -121,6 +121,9 @@ std::vector<Mat> Face::getFramesFromCamera(int timeout)
             capture >> frame; 
             if( frame.empty() ) 
                 break;
+            flip(frame, temp, 1);
+            imshow("test frame", temp);
+            waitKey(10);
             camera_frames.push_back(frame.clone());   
         }    
     }    
