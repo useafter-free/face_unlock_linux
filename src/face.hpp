@@ -34,7 +34,7 @@ protected:
     Ptr<face::FaceRecognizer> faceRec;
     const std::string caffeConfigFile;
     const std::string caffeWeightFile;
-    std::vector<Mat> getFramesFromFile();
+    std::vector<Mat> getFramesFromFile(std::string dataset_path);
     std::vector<Mat> getFramesFromCamera(int timeout);
     int isModelAvailable(std::string username);
     void cropFace(Rect& faces, Mat& frame);    

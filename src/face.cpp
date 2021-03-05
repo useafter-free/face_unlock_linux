@@ -87,10 +87,9 @@ bool Face::haarProcessing(Mat &frame) {
     return false;
 }
 
-std::vector<Mat> Face::getFramesFromFile() 
+std::vector<Mat> Face::getFramesFromFile(std::string dataset_path)
 {
     std::vector<Mat> dataset_frames;
-    std::string dataset_path = model_dir_path + username + "/";
     for (const auto& file  : fs::directory_iterator(dataset_path)) {
         Mat frame1 = imread(file.path(), IMREAD_COLOR);    
         dataset_frames.push_back(frame1.clone());

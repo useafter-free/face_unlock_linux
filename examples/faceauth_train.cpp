@@ -1,18 +1,24 @@
 #include <faceauth/train.hpp>
-
+#include <unistd.h>
 
 int main(int argc, char **argv)
 {
-    std::string username, modelPath;
+    if (getuid() != 0) {
+        std::cout << "You need to be root user to train model! \nexiting.....\n" ;
+        exit(1);
+    }
+
+    std::string username, modelPath, datasetPath;
     std::cout << "Username: ";
     std::cin >> username;
-    std::cout << "Enter model path: ";
-    std::cin >> modelPath;
-     Train *obj;
+    modelPath = "/etc/faceauth_data/";
+    std::cout << "Enter path to images directory: ";
+    std::cin >> datasetPath;
+    Train *obj;
     if (std::stoi(argv[1]) == HAARCASCADE) {
-        obj = new Train(modelPath, username, "haarcascade_frontalface_alt.xml");
+        obj = new Train(modelPath, datasetPath, username, "haarcascade_frontalface_alt.xml");
     } else if (std::stoi(argv[1]) == DNN) {
-        obj = new Train(modelPath, username, "deploy.prototxt", "res10_300x300_ssd_iter_140000_fp16.caffemodel");
+        obj = new Train(modelPath, datasetPath, username, "deploy.prototxt", "res10_300x300_ssd_iter_140000_fp16.caffemodel");
     }
 
     obj->trainModel();

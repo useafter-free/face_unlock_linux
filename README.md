@@ -49,8 +49,8 @@ This will save a `username`-model.xml file `data/` directory.
 - An example config file can be:
 
   ```
-  auth sufficient /usr/local/lib/libfaceauth.so 2 /path/to/face_unlock_linux/data/ 104.0 10 
-  account sufficient /usr/local/lib/libfaceauth.so 2 /path/to/face_unlock_linux/data/ 104.0 10
+  auth sufficient /usr/local/lib/libfaceauth.so 2 /etc/faceauth_data/ 104.0 10
+  account sufficient /usr/local/lib/libfaceauth.so 2 /etc/faceauth_data/ 104.0 10
   ```
 
 - Then compile the test binary:
