@@ -2,6 +2,8 @@
 #include <chrono>
 #include <iomanip>
 #include <numeric>
+#include <systemd/sd-journal.h>
+
 
 Test::Test(double lthreshold, int timeout, std::string model_dir_path, std::string username, std::string caffeConfigFile, std::string caffeWeightFile)
 : lthreshold(lthreshold), timeout(timeout), Face(model_dir_path, username, caffeConfigFile, caffeWeightFile)
@@ -35,7 +37,7 @@ bool Test::testFaces()
         }
         time_haar = (std::chrono::steady_clock::now() - start_test);
         //std::time_t ttp = std::chrono::system_clock::to_time_t(time_haar);
-        std::cout << "time for haar: " << time_haar.count() << "\n";
+        // std::cout << "time for haar: " << time_haar.count() << "\n";
         break;
     case DNN:
         for (auto& frame : camera_frames) {
@@ -51,8 +53,10 @@ bool Test::testFaces()
     if (num_faces == 0)
         return false;
 
-    std::cout << found_count << "\n" << num_faces << "\n";
-    std::cout << "ratio of success: " << (static_cast<double>(found_count) / static_cast<double>(num_faces)) << "\n";
+    sd_journal_print(LOG_NOTICE, "Frames received: %d, Frames matched: %d", num_faces, found_count);
+    // std::cout << "ratio of success: " << (static_cast<double>(found_count) / static_cast<double>(num_faces)) << "\n";
+    sd_journal_print(LOG_NOTICE, "Percentage: %lf", (static_cast<double>(found_count) / static_cast<double>(num_faces)) * 100 );
+
     return (static_cast<double>(found_count) / static_cast<double>(num_faces)) > 0.65 ; 
 }
 
