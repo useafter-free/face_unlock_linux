@@ -12,23 +12,16 @@ ifeq ($(PREFIX),)
 endif
 
 DEPS = $(wildcard $(SRCDIR)/*.hpp)
-
+PAMSRC = $(wildcard $(SRCDIR)/pam/*.cpp)
 SRC = $(wildcard $(SRCDIR)/*.cpp)
 
 faceauth: $(SRC)
 	mkdir -p $(BDIR)
-	$(CXX) -g -c $^ $(CFLAGS)
-	ar rcs $(BDIR)/libfaceauth.a *.o
-	ar -t $(BDIR)/libfaceauth.a
-	rm *.o
-	$(CXX) -g -fPIC -c $^ $(CFLAGS)
-	$(CXX) -shared -o $(BDIR)/libfaceauth.so *.o
-	rm *.o
+	$(CXX) -g -shared -fPIC -o $(BDIR)/libfaceauth.so $^ $(CFLAGS)
 
-install: $(BDIR)/libfaceauth.a $(BDIR)/libfaceauth.so
+install:
 	install -d $(PREFIX)/lib/
 	install -m 644 $(BDIR)/libfaceauth.so $(PREFIX)/lib/
-	install -m 644 $(BDIR)/libfaceauth.a $(PREFIX)/lib/
 	install -d $(PREFIX)/include/faceauth
 	install -m 644 $(DEPS) $(PREFIX)/include/faceauth
 	echo "/usr/local/lib" > /etc/ld.so.conf.d/local.conf
@@ -37,3 +30,10 @@ install: $(BDIR)/libfaceauth.a $(BDIR)/libfaceauth.so
 	install -m 644 $(SDATA)/res10_300x300_ssd_iter_140000_fp16.caffemodel $(DDATA)
 	install -m 644 $(SDATA)/haarcascade_frontalface_alt.xml $(DDATA)
 	ldconfig
+
+pam_faceauth: $(PAMSRC)
+	mkdir -p $(BDIR)
+	$(CXX) -g -fPIC -shared -o $(BDIR)/pam_faceauth.so $^ -lfaceauth -lpam -lpam_misc $(CFLAGS)
+
+pam_faceauth_install:
+	install -m 755 $(BDIR)/pam_faceauth.so /lib/security

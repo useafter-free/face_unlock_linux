@@ -1,8 +1,6 @@
 #include <security/pam_appl.h>
 #include <security/pam_misc.h>
 #include <iostream>
-#include <opencv2/opencv.hpp>
-
 const struct pam_conv conv = {
 	misc_conv,
 	NULL
@@ -13,7 +11,6 @@ int main(int argc, char * argv[])
 	pam_handle_t * pamh = NULL;
 	int retval;
 	const char * user = NULL;
-
 	retval = pam_start("faceauth_test", user, &conv, &pamh);
 
 	// Are the credentials correct?
