@@ -110,12 +110,12 @@ std::vector<Mat> Face::getFramesFromCamera(int timeout)
     if (capture.isOpened()) 
     { 
         // Capture frames from video and detect faces 
-        std::cout << "Trying to Authenticate....\n"; 
+        // std::cout << "Trying to Authenticate....\n";
         std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
         while (1)
         { 
             if(std::chrono::steady_clock::now() - start > std::chrono::seconds(timeout)) {
-                std::cout << "Timeout reached\n";
+                // std::cout << "Timeout reached\n";
                 break;   
             } 
             capture >> frame; 

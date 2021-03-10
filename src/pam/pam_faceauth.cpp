@@ -19,15 +19,14 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t * pamh, int flags, int argc, con
     int retval;
     const char *name;
     retval = pam_get_user(pamh, &name, "login: ");
-    if (retval == PAM_SUCCESS) {
-        std::cout << "username obtained: " << name << "\n";
-    } else {
-        std::cout << "trouble reading username\n";
+    if (retval != PAM_SUCCESS) {
+        std::cerr << "ERROR: trouble reading username\n";
         return retval;
     }
 
     std::string username(name);
-    sd_journal_print(LOG_NOTICE, "Initializing facial unlock for %s", name);
+    std::cout << "[faceauth] Attempting face auth for: " << username << "\n";
+    sd_journal_print(LOG_INFO, "Initializing facial authentication for %s", name);
     std::string model_dir_path(argv[1]);
     if (model_dir_path[model_dir_path.length() - 1] != '/')
         model_dir_path += "/";
@@ -44,7 +43,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t * pamh, int flags, int argc, con
         return PAM_SUCCESS;
     } else {
         //std::cout << "face doesn't match";
-        sd_journal_print(LOG_NOTICE, "Face didn't match :(");
+        sd_journal_print(LOG_ERR, "Face didn't match :(");
         return PAM_AUTH_ERR;
     }
 
