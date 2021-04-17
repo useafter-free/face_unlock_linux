@@ -49,8 +49,8 @@ This will save a `username`-model.xml file `data/` directory.
 - An example config file can be:
 
   ```
-  auth sufficient /usr/local/lib/libfaceauth.so 2 /etc/faceauth_data/ 104.0 10
-  account sufficient /usr/local/lib/libfaceauth.so 2 /etc/faceauth_data/ 104.0 10
+  auth sufficient pam_faceauth.so 2 /etc/faceauth_data/ 104.0 10
+  account sufficient pam_faceauth.so 2 /etc/faceauth_data/ 104.0 10
   ```
 
 - Then compile the test binary:
@@ -61,7 +61,26 @@ This will save a `username`-model.xml file `data/` directory.
   ./test
   ```
 
-  
+
+- To see logs for the application, run  `journalctl -xe`
+
+- If you want to use the facial unlock with display managers like LightDM, gdm e.t.c. or lockscreens like i3lock, then just add the config lines to the respective files in /etc/pam.d/
+
+- For example:
+
+  - For i3lock - /etc/pam.d/i3lock
+
+    ```
+    #
+    # PAM configuration file for the i3lock-color screen locker. By default, it includes
+    # the 'system-auth' configuration file (see /etc/pam.d/system-auth) for Arch and Gentoo
+    # and 'login' for Debian. Note that vanilla i3lock upstream uses 'login' instead.
+    #
+    #
+    auth sufficient pam_faceauth.so 2 /etc/faceauth_data/ 104.0 10
+    auth include system-auth # For Arch/Gentoo
+    #auth include login # For Debian
+    ```
 
 ### Contributing
 
