@@ -1,5 +1,6 @@
 #include <faceauth/train.hpp>
 #include <unistd.h>
+#include <readline/readline.h>
 
 int main(int argc, char **argv)
 {
@@ -12,8 +13,7 @@ int main(int argc, char **argv)
     std::cout << "Username: ";
     std::cin >> username;
     modelPath = "/etc/faceauth_data/";
-    std::cout << "Enter path to images directory: ";
-    std::cin >> datasetPath;
+    datasetPath = readline("Enter path to images directory:");
     Train *obj;
     if (std::stoi(argv[1]) == HAARCASCADE) {
         obj = new Train(modelPath, datasetPath, username, "haarcascade_frontalface_alt.xml");

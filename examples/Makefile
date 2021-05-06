@@ -5,7 +5,7 @@ BINTEST = test
 CFLAGS += -lpam -lpam_misc -std=c++17
 
 all:
-	$(CC) faceauth_train.cpp `pkg-config --cflags --libs opencv4` -lfaceauth $(CFLAGS) -o $(BINTRAIN)
+	$(CC) faceauth_train.cpp `pkg-config --cflags --libs opencv4` -lreadline -lfaceauth $(CFLAGS) -o $(BINTRAIN)
 	$(CC) faceauth_test.cpp  $(CFLAGS) -o $(BINTEST)
 
 train:

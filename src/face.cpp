@@ -135,6 +135,7 @@ void Face::processFrames(std::vector<Mat>& frames)
     for (auto& frame : frames) {
         cvtColor(frame, frame, COLOR_BGR2GRAY);     
         flip(frame, frame, 1);
+        equalizeHist(frame, frame);
     }
 }
 
@@ -142,4 +143,5 @@ void Face::processFrame(Mat& frame)
 {
     cvtColor(frame, frame, COLOR_BGR2GRAY);     
     flip(frame, frame, 1);
+    equalizeHist(frame, frame);
 }
